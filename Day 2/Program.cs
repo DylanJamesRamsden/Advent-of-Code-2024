@@ -1,14 +1,13 @@
 ﻿using System.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 List<List<Int32>> PuzzleData = new List<List<Int32>>();
 
-StreamReader streamReader = new StreamReader("C:\\Users\\Darth Vader\\Documents\\GitHub\\Advent-of-Code-2024\\Day 2\\PuzzleData.txt");
+StreamReader streamReader = new StreamReader("C:\\Users\\Dylan\\Documents\\GitHub\\Advent-of-Code-2024\\Day 2\\PuzzleData.txt");
 string streamReaderLine = streamReader.ReadLine();
 while (streamReaderLine != null)
 {
     // Console.WriteLine(streamReaderLine);
-    string[] streamReaderLineSplit = streamReaderLine.Split(" ");
+    string[] streamReaderLineSplit = streamReaderLine.Split(",");
 
     List<Int32> newList = new List<Int32>();
     foreach (string value in streamReaderLineSplit)
@@ -21,177 +20,91 @@ while (streamReaderLine != null)
 }
 streamReader.Close();
 
-foreach (var report in PuzzleData)
-{
-    string reportString = "";
-    foreach (var reportItem in report)
-    {
-        reportString += reportItem.ToString() + ", ";
-    }
-
-    Console.WriteLine(reportString);
-}
-
-Console.WriteLine("Reports: " + PuzzleData.Count.ToString());
-
-// FLOW ***************************************************************************************************
-// 0 = Increasing
-// 1 = Decreasing
-List<Int32> reportFlowData = new List<Int32>();
-foreach (var report in PuzzleData)
-{
-    // @TODO Could have a problem here if we 2 values are the same and next to eachother
-    Int32 currentReportFlow = report[0] < report[1] ? 0 : 1;
-    reportFlowData.Add(currentReportFlow);
-}
-
-foreach (Int32 flow in reportFlowData)
-{
-    Console.WriteLine(flow.ToString());
-}
-
-List<List<Int32>> correctFlowPuzzleData = new List<List<Int32>>();
+List<List<Int32>> goodApples = new List<List<Int32>>();
 List<List<Int32>> badApples = new List<List<Int32>>();
-for (int i = 0; i < PuzzleData.Count; i++)
+foreach (var report in PuzzleData)
 {
-    Int32 flow = reportFlowData[i];
-    bool validFlow = true;
-    for (int j = 0; j < PuzzleData[i].Count - 1; j++)
+    bool validReport = IsReportValid(report);
+    if (validReport)
+        goodApples.Add(report);
+    else badApples.Add(report);
+}
+
+Console.WriteLine("Valid reports: " + goodApples.Count.ToString());
+Console.WriteLine("Invalid reports: " + badApples.Count.ToString());
+
+Int32 fixableApples = 0;
+foreach (var report in badApples)
+{
+    bool fixable = false;
+    for (int i = 0; i <= report.Count - 1; i++)
     {
-        if (flow == 0)
+        string modifiedReportString = "";
+        List<Int32> modifiedReport = new List<Int32>();
+        for (int copy = 0; copy <= report.Count - 1; copy++)
         {
-            if (PuzzleData[i][j] > PuzzleData[i][j + 1])
+            if (copy != i)
             {
-                validFlow = false;
-                break;
+                modifiedReport.Add(report[copy]);
+                modifiedReportString += report[copy].ToString() + ",";
             }
+        }
+
+        bool isReportValid = IsReportValid(modifiedReport);
+        if (isReportValid == true)
+        {
+            fixableApples++;
+            break;
+        }
+    }
+}
+
+Console.WriteLine("Fixable reports: " + fixableApples.ToString());
+Console.WriteLine("*******************************************");
+Console.WriteLine("Total valid reports: " + (fixableApples + goodApples.Count).ToString());
+
+
+
+bool IsReportValid(List<Int32> reportToCheck)
+{
+    // Flow
+    // 1 = asc
+    // 2 = dsc
+    Int32 direction = -1;
+    for (int i = 0; i < reportToCheck.Count - 1; i++)
+    {
+        // Duplicate (invalid report)
+        if (reportToCheck[i] == reportToCheck[i + 1])
+        {
+            return false;
+        }
+
+        if (i == 0)
+        {
+            direction = reportToCheck[i] < reportToCheck[i + 1] ? 1 : 2;
         }
         else
         {
-            if (PuzzleData[i][j] < PuzzleData[i][j + 1])
+            if (direction == 1)
             {
-                validFlow = false;
-                break;
+                if (reportToCheck[i] > reportToCheck[i + 1]) { return false; }
+            }
+            else if (direction == 2)
+            {
+                if (reportToCheck[i] < reportToCheck[i + 1]) { return false; }
             }
         }
     }
 
-    if (validFlow)
+    for (int i = 0; i < reportToCheck.Count - 1; i++)
     {
-        correctFlowPuzzleData.Add(PuzzleData[i]);
-    }
-}
-
-foreach (var report in correctFlowPuzzleData)
-{
-    string reportString = "";
-    foreach (var reportItem in report)
-    {
-        reportString += reportItem.ToString() + ", ";
-    }
-
-    Console.WriteLine(reportString);
-}
-// FLOW ***************************************************************************************************
-
-//DIFFERENCE ***************************************************************************************************
-List<List<Int32>> correctDifferencePuzzleData = new List<List<Int32>>();
-foreach (var report in correctFlowPuzzleData)
-{
-    bool differenceValid = true;
-    for (int i = 0; i < report.Count - 1; i++)
-    {
-        Int32 difference = Math.Abs(report[i] - report[i + 1]);
+        Int32 difference = Math.Abs(reportToCheck[i] - reportToCheck[i + 1]);
         if (!(difference >= 1 && difference <= 3))
         {
-            differenceValid = false;
-            break;
+            return false;
         }
     }
 
-    if (differenceValid)
-    {
-        correctDifferencePuzzleData.Add(report);
-    }
-    else
-    {
-        badApples.Add(report);
-    }
-}
 
-Console.WriteLine("Valid Differences:");
-foreach (var report in correctDifferencePuzzleData)
-{
-    string reportString = "";
-    foreach (var reportItem in report)
-    {
-        reportString += reportItem.ToString() + ", ";
-    }
-
-    Console.WriteLine(reportString);
-}
-
-Console.WriteLine("Valid reports: " + correctDifferencePuzzleData.Count.ToString());
-//DIFFERENCE ***************************************************************************************************
-
-List<List<Int32>> goodApples = new List<List<Int32>>();
-for (int i = badApples.Count - 1; i >= 0; i--)
-{
-    if (BruteForce(badApples[i]) == 1)
-    {
-        goodApples.Add(badApples[i]);
-    }
-}
-
-Console.WriteLine("Single Differences:");
-foreach (var report in goodApples)
-{
-    string reportString = "";
-    foreach (var reportItem in report)
-    {
-        reportString += reportItem.ToString() + ", ";
-    }
-
-    Console.WriteLine(reportString);
-}
-
-Console.WriteLine("Good Apples: " + badApples.Count.ToString());
-
-Int32 BruteForce(List<Int32> ListToBruteForce)
-{
-    Int32 correctionsNeeded = 0;
-    for (int i = 0; i < ListToBruteForce.Count; i++)
-    {
-        List<Int32> modifiedList = ListToBruteForce;
-        modifiedList.RemoveAt(i);
-
-        bool Fixed = true;
-
-        //Check Duplicates
-        for (int j = 0; j < modifiedList.Count - 1; j++)
-        {
-            if (modifiedList[j] == modifiedList[j + 1])
-            {
-                Fixed = false;
-            }
-        }
-
-        // Check calculations
-        for (int j = 0; j < modifiedList.Count - 1; j++)
-        {
-            Int32 difference = Math.Abs(modifiedList[j] - modifiedList[j + 1]);
-            if (!(difference >= 1 && difference <= 3))
-            {
-                Fixed = false;
-            }
-        }
-
-        if (Fixed == true)
-        {
-            correctionsNeeded = 1;
-            break;
-        }
-    }
-
-    return correctionsNeeded;
+    return true;
 }
