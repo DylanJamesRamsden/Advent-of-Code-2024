@@ -4,7 +4,7 @@ List<int> puzzleDataA = new List<int>();
 List<int> puzzleDataB = new List<int>();
 
 // Reading from the Puzzle Data
-StreamReader streamReader = new StreamReader("C:\\Users\\Dylan\\Documents\\GitHub\\Advent-of-Code-2024\\Day 1\\PuzzleData.txt");
+StreamReader streamReader = new StreamReader("C:\\Users\\Darth Vader\\Documents\\GitHub\\Advent-of-Code-2024\\Day 1\\PuzzleData.txt");
 string streamReaderLine = streamReader.ReadLine();
 while (streamReaderLine != null)
 {
