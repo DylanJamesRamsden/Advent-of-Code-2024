@@ -1,4 +1,5 @@
-﻿List<List<char>> PuzzleData = new List<List<char>>();
+﻿
+List<List<char>> PuzzleData = new List<List<char>>();
 
 StreamReader streamReader = new StreamReader("C:\\Users\\Darth Vader\\Documents\\GitHub\\Advent-of-Code-2024\\Day 4\\PuzzleData.txt");
 string streamReaderLine = streamReader.ReadLine();
@@ -29,6 +30,23 @@ for (int row = 0; row < PuzzleData.Count; row++)
 }
 
 Console.WriteLine("XMAS Counter: " + combinationCounter.ToString());
+
+Int32 xmasCounter = 0;
+for (int row = 1; row < PuzzleData.Count - 1; row++)
+{
+    for (int coloumn = 1; coloumn < PuzzleData[row].Count - 1; coloumn++)
+    {
+       if (PuzzleData[row][coloumn] == 'A')
+       {
+            if (IsXmas(row, coloumn))
+            {
+                xmasCounter += 1;
+            }
+       }
+    }
+}
+
+Console.WriteLine("X-MAS Counter: " + xmasCounter.ToString());
 
 Int32 GetNumberOfXmas(Int32 row, Int32 coloumn)
 {
@@ -269,4 +287,24 @@ bool IsValidIndex(Int32 row, Int32 coloumn)
     }
 
     return false;
+}
+
+// Part 2
+bool IsXmas(Int32 row, Int32 coloumn)
+{
+    string outputString;
+
+    outputString = PuzzleData[row - 1][coloumn - 1].ToString() + PuzzleData[row][coloumn].ToString() + PuzzleData[row + 1][coloumn + 1].ToString();
+    if (outputString != "MAS" && outputString != "SAM")
+    {
+        return false;
+    }
+
+    outputString = PuzzleData[row + 1][coloumn - 1].ToString() + PuzzleData[row][coloumn].ToString() + PuzzleData[row - 1][coloumn + 1].ToString();
+    if (outputString != "MAS" && outputString != "SAM")
+    {
+        return false;
+    }
+
+    return true;
 }
