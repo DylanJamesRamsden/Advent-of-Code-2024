@@ -1,6 +1,6 @@
 ﻿List<List<char>> PuzzleData = new List<List<char>>();
 
-StreamReader streamReader = new StreamReader("C:\\Users\\Darth Vader\\Documents\\GitHub\\Advent-of-Code-2024\\Day 4\\PuzzleData.txt");
+StreamReader streamReader = new StreamReader("C:\\Users\\Dylan\\Documents\\GitHub\\Advent-of-Code-2024\\Day 4\\PuzzleData.txt");
 string streamReaderLine = streamReader.ReadLine();
 while (streamReaderLine != null)
 {
