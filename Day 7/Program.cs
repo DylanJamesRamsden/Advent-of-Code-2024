@@ -18,7 +18,9 @@ class MainProgram
     
     static void Main(string[] args)
     {
-        Console.WriteLine("Got em!");
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        /* the code that you want to measure comes here */
+
         Dictionary<Int64, List<Int64>> calibrations = new Dictionary<Int64, List<Int64>>();
 
         StreamReader streamReaderCalibration = new StreamReader("C:\\Users\\Dylan\\Documents\\GitHub\\Advent-of-Code-2024\\Day 7\\PuzzleData.txt");
@@ -46,108 +48,16 @@ class MainProgram
         // Its a tree!
 
         Dictionary<Int64, List<Int64>> correctCalibrations = new Dictionary<Int64, List<Int64>>();
+        Dictionary<Int64, List<Int64>> incorrectCalibrations = new Dictionary<Int64, List<Int64>>();
         foreach (KeyValuePair<Int64, List<Int64>> calibration in calibrations)
         {
-            // just adding index 0
-            List<Branch> branches = new List<Branch>();
-            branches.Add(new Branch(0, new List<char>()));
-            bool bAtBottom = false;
-            Int64 LevelIndex = 0;
-            while (!bAtBottom)
+            if (IsCorrectCalibration_Part1(calibration.Key, calibration.Value))
             {
-                LevelIndex++;
-
-                List<Branch> previousLevelBranches = new List<Branch>();
-                foreach(Branch branch in branches)
-                {
-                    if (branch.LevelIndex == LevelIndex - 1)
-                    {
-                        previousLevelBranches.Add(branch);
-                    }
-                }
-
-                Int64 branchesAdded = 0;
-                foreach(Branch branch in previousLevelBranches)
-                {
-                    for (Int64 i = 0; i < 2; i++)
-                    {
-                        // +
-                        if (i == 0)
-                        {
-                            // Copy list
-                            List<char> newCalculation = new List<char>();
-                            foreach (char c in branch.Calculations)
-                            {
-                                newCalculation.Add(c);
-                            }
-
-                            newCalculation.Add('+');
-                            branches.Add(new Branch(LevelIndex, newCalculation));
-
-                            branchesAdded++;
-                        }
-                        // -
-                        else if (i == 1)
-                        {
-                            List<char> newCalculation = new List<char>();
-                            foreach (char c in branch.Calculations)
-                            {
-                                newCalculation.Add(c);
-                            }
-
-                            newCalculation.Add('*');
-                            branches.Add(new Branch(LevelIndex, newCalculation));
-
-                            branchesAdded++;
-                        }                       
-                    }
-                }
-
-                if (LevelIndex == calibration.Value.Count - 1)
-                {
-                    bAtBottom = true;
-                }
-
-                Console.WriteLine("Branches added: " + branchesAdded.ToString());
+                correctCalibrations.Add(calibration.Key, calibration.Value);
             }
-
-            Console.WriteLine();
-
-            List<Branch> answerBranches = new List<Branch>();
-            foreach (Branch branch in branches)
+            else
             {
-                if (branch.LevelIndex == LevelIndex)
-                {
-                    answerBranches.Add(branch);
-                }
-            }
-
-            List<Int64> Answers = new List<Int64>();
-            foreach (Branch answerBranch in answerBranches)
-            {
-                Int64 Answer = calibration.Value[0];
-                string calculationString = Answer.ToString() + " ";
-                for (int i = 1; i < calibration.Value.Count; i++)
-                {
-                    if (answerBranch.Calculations[i - 1] == '+')
-                    {
-                        Answer = Answer + calibration.Value[i];
-                        calculationString += answerBranch.Calculations[i - 1] + " " + calibration.Value[i].ToString() + " ";
-                    }
-                    else if (answerBranch.Calculations[i - 1] == '*')
-                    {
-                        Answer = Answer * calibration.Value[i];
-                        calculationString += answerBranch.Calculations[i - 1] + " " + calibration.Value[i].ToString() + " ";
-                    }
-                }
-
-                Console.WriteLine(calculationString);
-                Console.WriteLine("Answer: " + Answer);
-                if (Answer == calibration.Key)
-                {
-                    correctCalibrations.Add(calibration.Key, calibration.Value);
-                    break;
-                }
+                incorrectCalibrations.Add(calibration.Key, calibration.Value);
             }
         }
 
@@ -157,7 +67,271 @@ class MainProgram
             correctCalibrationsAdded += correctCalibration.Key;
         }
 
+        Dictionary<Int64, List<Int64>> fixableCalibrations = new Dictionary<Int64, List<Int64>>();
+        foreach (KeyValuePair<Int64, List<Int64>> incorrectCalibration in incorrectCalibrations)
+        {
+            if (IsCorrectCalibration_Part2(incorrectCalibration.Key, incorrectCalibration.Value))
+            {
+                fixableCalibrations.Add(incorrectCalibration.Key, incorrectCalibration.Value);
+            }
+        }
+
+        Int64 fixableCalibrationsAdded = 0;
+        foreach (var fixableCalibration in fixableCalibrations)
+        {
+            fixableCalibrationsAdded += fixableCalibration.Key;
+        }
+
         Console.WriteLine("Correct Calibrations Added: " + correctCalibrationsAdded.ToString());
+        Console.WriteLine("Incorrect Calibrations: " + incorrectCalibrations.Count.ToString());
+        Console.WriteLine("Fixable Calibrations Added: " + fixableCalibrationsAdded.ToString());
+
+        Console.WriteLine("Fixable Calibrations: " + fixableCalibrations.Count.ToString());
+        Console.WriteLine("Total (Correct and Fixable): " + (correctCalibrationsAdded + fixableCalibrationsAdded).ToString());
+
+        watch.Stop();
+        var elapsedMs = watch.Elapsed;
+        Console.WriteLine("Execution time: " + elapsedMs.ToString());
+    }
+
+    static bool IsCorrectCalibration_Part1(Int64 Key, List<Int64> calibrationData)
+    {
+        // just adding index 0
+        List<Branch> branches = new List<Branch>();
+        branches.Add(new Branch(0, new List<char>()));
+        bool bAtBottom = false;
+        Int64 LevelIndex = 0;
+        while (!bAtBottom)
+        {
+            LevelIndex++;
+
+            List<Branch> previousLevelBranches = new List<Branch>();
+            foreach (Branch branch in branches)
+            {
+                if (branch.LevelIndex == LevelIndex - 1)
+                {
+                    previousLevelBranches.Add(branch);
+                }
+            }
+
+            Int64 branchesAdded = 0;
+            foreach (Branch branch in previousLevelBranches)
+            {
+                for (Int64 i = 0; i < 2; i++)
+                {
+                    // +
+                    if (i == 0)
+                    {
+                        // Copy list
+                        List<char> newCalculation = new List<char>();
+                        foreach (char c in branch.Calculations)
+                        {
+                            newCalculation.Add(c);
+                        }
+
+                        newCalculation.Add('+');
+                        branches.Add(new Branch(LevelIndex, newCalculation));
+
+                        branchesAdded++;
+                    }
+                    // -
+                    else if (i == 1)
+                    {
+                        List<char> newCalculation = new List<char>();
+                        foreach (char c in branch.Calculations)
+                        {
+                            newCalculation.Add(c);
+                        }
+
+                        newCalculation.Add('*');
+                        branches.Add(new Branch(LevelIndex, newCalculation));
+
+                        branchesAdded++;
+                    }
+                }
+            }
+
+            if (LevelIndex == calibrationData.Count - 1)
+            {
+                bAtBottom = true;
+            }
+
+            // Console.WriteLine("Branches added: " + branchesAdded.ToString());
+        }
+
+        // Console.WriteLine();
+
+        List<Branch> answerBranches = new List<Branch>();
+        foreach (Branch branch in branches)
+        {
+            if (branch.LevelIndex == LevelIndex)
+            {
+                answerBranches.Add(branch);
+            }
+        }
+
+        bool bCorrectAnswerFound = false;
+        List<Int64> Answers = new List<Int64>();
+        foreach (Branch answerBranch in answerBranches)
+        {
+            Int64 Answer = calibrationData[0];
+            string calculationString = Answer.ToString() + " ";
+            for (int i = 1; i < calibrationData.Count; i++)
+            {
+                if (answerBranch.Calculations[i - 1] == '+')
+                {
+                    Answer = Answer + calibrationData[i];
+                    calculationString += answerBranch.Calculations[i - 1] + " " + calibrationData[i].ToString() + " ";
+                }
+                else if (answerBranch.Calculations[i - 1] == '*')
+                {
+                    Answer = Answer * calibrationData[i];
+                    calculationString += answerBranch.Calculations[i - 1] + " " + calibrationData[i].ToString() + " ";
+                }
+            }
+
+            /*Console.WriteLine(calculationString);
+            Console.WriteLine("Answer: " + Answer);*/
+            if (Answer == Key)
+            {
+                bCorrectAnswerFound = true;
+                break;
+            }
+        }
+
+        return bCorrectAnswerFound;
+    }
+
+    static bool IsCorrectCalibration_Part2(Int64 Key, List<Int64> calibrationData)
+    {
+        // Console.WriteLine("Got em!");
+
+        // just adding index 0
+        List<Branch> branches = new List<Branch>();
+        branches.Add(new Branch(0, new List<char>()));
+        bool bAtBottom = false;
+        Int64 LevelIndex = 0;
+        while (!bAtBottom)
+        {
+            LevelIndex++;
+
+            List<Branch> previousLevelBranches = new List<Branch>();
+            foreach (Branch branch in branches)
+            {
+                if (branch.LevelIndex == LevelIndex - 1)
+                {
+                    previousLevelBranches.Add(branch);
+                }
+            }
+
+            Int64 branchesAdded = 0;
+            foreach (Branch branch in previousLevelBranches)
+            {
+                for (Int64 i = 0; i < 3; i++)
+                {
+                    // +
+                    if (i == 0)
+                    {
+                        // Copy list
+                        List<char> newCalculation = new List<char>();
+                        foreach (char c in branch.Calculations)
+                        {
+                            newCalculation.Add(c);
+                        }
+
+                        newCalculation.Add('+');
+                        branches.Add(new Branch(LevelIndex, newCalculation));
+
+                        branchesAdded++;
+                    }
+                    // -
+                    else if (i == 1)
+                    {
+                        List<char> newCalculation = new List<char>();
+                        foreach (char c in branch.Calculations)
+                        {
+                            newCalculation.Add(c);
+                        }
+
+                        newCalculation.Add('*');
+                        branches.Add(new Branch(LevelIndex, newCalculation));
+
+                        branchesAdded++;
+                    }
+                    else if (i == 2)
+                    {
+                        List<char> newCalculation = new List<char>();
+                        foreach (char c in branch.Calculations)
+                        {
+                            newCalculation.Add(c);
+                        }
+
+                        newCalculation.Add('|');
+                        branches.Add(new Branch(LevelIndex, newCalculation));
+
+                        branchesAdded++;
+                    }
+                }
+            }
+
+            if (LevelIndex == calibrationData.Count - 1)
+            {
+                bAtBottom = true;
+            }
+
+            // Console.WriteLine("Branches added: " + branchesAdded.ToString());
+        }
+
+        // Console.WriteLine("Branches----: " + branches.Count.ToString());
+
+        // Console.WriteLine();
+
+        List<Branch> answerBranches = new List<Branch>();
+        foreach (Branch branch in branches)
+        {
+            if (branch.LevelIndex == LevelIndex)
+            {
+                answerBranches.Add(branch);
+            }
+        }
+
+        // Console.WriteLine(answerBranches.Count.ToString());
+
+        bool bCorrectAnswerFound = false;
+        List<Int64> Answers = new List<Int64>();
+        foreach (Branch answerBranch in answerBranches)
+        {
+            Int64 Answer = calibrationData[0];
+            string calculationString = Answer.ToString() + " ";
+            for (int i = 1; i < calibrationData.Count; i++)
+            {
+                if (answerBranch.Calculations[i - 1] == '+')
+                {
+                    Answer = Answer + calibrationData[i];
+                    //calculationString += answerBranch.Calculations[i - 1] + " " + calibrationData[i].ToString() + " ";
+                }
+                else if (answerBranch.Calculations[i - 1] == '*')
+                {
+                    Answer = Answer * calibrationData[i];
+                    //calculationString += answerBranch.Calculations[i - 1] + " " + calibrationData[i].ToString() + " ";
+                }
+                else if (answerBranch.Calculations[i - 1] == '|')
+                {
+                    Answer = Int64.Parse(Answer.ToString() + calibrationData[i].ToString());
+                    //calculationString += "(->)" + Answer.ToString();
+                }
+            }
+
+           /* Console.WriteLine(calculationString);
+            Console.WriteLine("Answer: " + Answer);*/
+            if (Answer == Key)
+            {
+                bCorrectAnswerFound = true;
+                break;
+            }
+        }
+
+        return bCorrectAnswerFound;
     }
 }
 
