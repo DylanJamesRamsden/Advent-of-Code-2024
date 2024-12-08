@@ -119,16 +119,16 @@ class MainProgram
             {
                 for (Int64 i = 0; i < 2; i++)
                 {
+                    // Copy list
+                    List<char> newCalculation = new List<char>();
+                    foreach (char c in branch.Calculations)
+                    {
+                        newCalculation.Add(c);
+                    }
+
                     // +
                     if (i == 0)
                     {
-                        // Copy list
-                        List<char> newCalculation = new List<char>();
-                        foreach (char c in branch.Calculations)
-                        {
-                            newCalculation.Add(c);
-                        }
-
                         newCalculation.Add('+');
                         branches.Add(new Branch(LevelIndex, newCalculation));
 
@@ -137,12 +137,6 @@ class MainProgram
                     // -
                     else if (i == 1)
                     {
-                        List<char> newCalculation = new List<char>();
-                        foreach (char c in branch.Calculations)
-                        {
-                            newCalculation.Add(c);
-                        }
-
                         newCalculation.Add('*');
                         branches.Add(new Branch(LevelIndex, newCalculation));
 
@@ -229,16 +223,16 @@ class MainProgram
             {
                 for (Int64 i = 0; i < 3; i++)
                 {
+                    // Copy list
+                    List<char> newCalculation = new List<char>();
+                    foreach (char c in branch.Calculations)
+                    {
+                        newCalculation.Add(c);
+                    }
+
                     // +
                     if (i == 0)
                     {
-                        // Copy list
-                        List<char> newCalculation = new List<char>();
-                        foreach (char c in branch.Calculations)
-                        {
-                            newCalculation.Add(c);
-                        }
-
                         newCalculation.Add('+');
                         branches.Add(new Branch(LevelIndex, newCalculation));
 
@@ -247,12 +241,6 @@ class MainProgram
                     // -
                     else if (i == 1)
                     {
-                        List<char> newCalculation = new List<char>();
-                        foreach (char c in branch.Calculations)
-                        {
-                            newCalculation.Add(c);
-                        }
-
                         newCalculation.Add('*');
                         branches.Add(new Branch(LevelIndex, newCalculation));
 
@@ -260,12 +248,6 @@ class MainProgram
                     }
                     else if (i == 2)
                     {
-                        List<char> newCalculation = new List<char>();
-                        foreach (char c in branch.Calculations)
-                        {
-                            newCalculation.Add(c);
-                        }
-
                         newCalculation.Add('|');
                         branches.Add(new Branch(LevelIndex, newCalculation));
 
