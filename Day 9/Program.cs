@@ -89,22 +89,6 @@ while(!CheckDotsAtEnd(FileBlockFormatData, numberOfDots))
     currentIndex++;
 }*/
 
-//Part 2
-/*Int32 currentIndex = 0;
-while (!CheckDotsAtEnd(FileBlockFormatData, numberOfDots))
-{
-    if (FileBlockFormatData[currentIndex] == ".")
-    {
-        Int32 IndexToSwap = 0;
-        ValidIndexFromRight(FileBlockFormatData, ref IndexToSwap);
-
-        FileBlockFormatData[currentIndex] = FileBlockFormatData[IndexToSwap];
-        FileBlockFormatData[IndexToSwap] = ".";
-    }
-
-    currentIndex++;
-}*/
-
 Calculation();
 
 Console.WriteLine("Formated with sorting:");
@@ -183,7 +167,7 @@ void Calculation()
         {
             attemptedFileIndexes.Add(FileBlockFormatData[i]);
 
-            /*Int32 fileGroupSize = 0;
+            Int32 fileGroupSize = 0;
             for (int y = i; y >= 0; y--)
             {
                 if (FileBlockFormatData[y] == FileBlockFormatData[i])
@@ -191,16 +175,6 @@ void Calculation()
                     fileGroupSize++;
                 }
                 else break;
-            }*/
-
-            // Calculates the file group size
-            Int32 fileGroupSize = 0;
-            foreach (string s in FileBlockFormatData)
-            {
-                if (s == FileBlockFormatData[i])
-                {
-                    fileGroupSize++;
-                }
             }
 
             // Counts how big the dot space is
@@ -222,7 +196,6 @@ void Calculation()
                             break;
                         }
                     }
-                    // Console.WriteLine(sequentialDotsSize.ToString());
 
                     // Slot the fileGroup in
                     if (sequentialDotsSize >= fileGroupSize && j < i)
