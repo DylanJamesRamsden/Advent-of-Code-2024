@@ -2,6 +2,7 @@
 /* the code that you want to measure comes here */
 
 using System.IO.Pipes;
+using System.Linq.Expressions;
 using System.Net;
 using System.Numerics;
 
@@ -50,7 +51,10 @@ foreach (char key in symbolLocations.Keys)
 }
 Console.WriteLine("---------------------------------------");
 
-Dictionary<Vector2, Int32> antinodeLocations = new Dictionary<Vector2, Int32>();
+Int32 antinoteLocationsCount = 0;
+Int32 pairCounter = 0;
+List<Vector2> antinotes = new List<Vector2>();
+Dictionary<char, List<Vector2>> antennaLocations = new Dictionary<char, List<Vector2>>();
 foreach (char key in symbolLocations.Keys)
 {
     // If there isn't a pair, we don't care
@@ -59,60 +63,81 @@ foreach (char key in symbolLocations.Keys)
         continue;
     }
 
+    antennaLocations.Add(key, new List<Vector2>());
+
     // Look at a location
     foreach (Vector2 currentSymbollocation in symbolLocations[key])
     {
+        Int32 pairsThatMadeAntinotes = 0;
         // Go through all locations of the same symbol and create antinodes
         foreach (Vector2 otherSymbolLocation in symbolLocations[key])
         {
+            bool bPairMadeAntinode = false;
             if (currentSymbollocation != otherSymbolLocation)
             {
-                Vector2 newLocation = new Vector2();
-
-                //X
+                Vector2 offsetVector;
                 if (otherSymbolLocation.X < currentSymbollocation.X || otherSymbolLocation.X > currentSymbollocation.X)
                 {
-                    newLocation.X = currentSymbollocation.X + (currentSymbollocation.X - otherSymbolLocation.X);
+                    offsetVector.X = currentSymbollocation.X - otherSymbolLocation.X;
                 }
                 else
                 {
-                    newLocation.X = currentSymbollocation.X;
+                    offsetVector.X = 0;
                 }
 
                 // Y
                 if (otherSymbolLocation.Y < currentSymbollocation.Y || otherSymbolLocation.Y > currentSymbollocation.Y)
                 {
-                    newLocation.Y = currentSymbollocation.Y + (currentSymbollocation.Y - otherSymbolLocation.Y);
+                    offsetVector.Y = currentSymbollocation.Y - otherSymbolLocation.Y;
                 }
                 else
                 {
-                    newLocation.Y = currentSymbollocation.Y;
+                    offsetVector.Y = 0;
                 }
 
-                // Is location on map
-                if (newLocation.Y >= 0 && newLocation.Y < rows.Count)
-                {
-                    if (newLocation.X >= 0 && newLocation.X < rows[0].Count)
-                    {
+                // Console.WriteLine("Offset Vector: " + offsetVector.ToString());
 
-                        if (antinodeLocations.ContainsKey(newLocation))
-                        {
-                            antinodeLocations[newLocation] = antinodeLocations[newLocation] + 1;
-                        }
-                        else
-                        {
-                            antinodeLocations.Add(newLocation, 1);
-                        }
+                Int32 pairs = 0;
+                bool bOnMap = true;
+                // start on the second location of the pair
+                Vector2 currentLocation = currentSymbollocation + offsetVector;
+                //Console.WriteLine("StartingLocation: " + currentLocation.ToString());
+                while (bOnMap)
+                {
+                    // currentLocation += offsetVector;
+                    if (IsLocationOnMap(currentLocation))
+                    {
+                        pairs++;
+                        antinoteLocationsCount++;
+                        antinotes.Add(currentLocation);
+
+                        antinoteLocationsCount += IsInLineWithAntenna(currentLocation, key);
+
+                        antennaLocations[key].Add(currentLocation);
+
+                        currentLocation += offsetVector;
+
+                        bPairMadeAntinode = true;
+                        //Console.WriteLine("Updated Location: " + currentLocation.ToString());
+                    }
+                    else
+                    {
+                        bOnMap = false;
+                        //Console.WriteLine("Off map!");
                     }
                 }
+
+                pairCounter += pairs;
+                //Console.WriteLine();
             }
         }
     }
 }
 
-Console.WriteLine("Antinode locations: " + antinodeLocations.Count.ToString());
+Console.WriteLine("Antinode locations: " + antinoteLocationsCount.ToString());
+Console.WriteLine("Pairs: " + pairCounter.ToString());
 
-Int32 totalUniqueAntinodeLocations = 0;
+/*Int32 totalUniqueAntinodeLocations = 0;
 foreach(Vector2 key in antinodeLocations.Keys)
 {
     if (antinodeLocations[key] == 1)
@@ -121,5 +146,103 @@ foreach(Vector2 key in antinodeLocations.Keys)
     }
 }
 
-Console.WriteLine("Unique Antinode locations: " + totalUniqueAntinodeLocations.ToString());
+Console.WriteLine("Unique Antinode locations: " + totalUniqueAntinodeLocations.ToString());*/
+
+for (int row = 0; row < rows.Count; row++)
+{
+    string rowString = "";
+    for (int column = 0; column < rows[row].Count; column++)
+    {
+        if (rows[row][column] == '.')
+        {
+            bool bFound = false;
+            Vector2 locationFound = new Vector2();
+            foreach (Vector2 antinote in antinotes)
+            {
+                if (antinote.Y == row && antinote.X == column)
+                {
+                    bFound = true;
+                    locationFound = antinote;
+                    break;
+                }
+            }
+
+            if (bFound)
+            {
+                rowString += "#";
+            }
+            else rowString += ".";
+        }
+        else
+        {
+            rowString += rows[row][column];
+        }
+    }
+
+    Console.WriteLine(rowString);
+}
+
+bool IsLocationOnMap(Vector2 Location)
+{
+    if (Location.Y >= 0 && Location.Y < rows.Count)
+    {
+        if (Location.X >= 0 && Location.X < rows[0].Count)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Int32 IsInLineWithAntenna(Vector2 location, char symbol)
+{
+    Int32 sameLineCounter = 0;
+
+    Int32 row = (int)location.Y;
+    Int32 column = (int)location.X;
+
+    // Int32 column = (int)location.X;
+    for (int i = 0; i < rows[row].Count; i++)
+    {
+        if (i != column && rows[row][i] == symbol)
+        {
+            if (!DoesAntennaExistForSymbol(new Vector2(i, row), symbol))
+            {
+                antennaLocations[symbol].Add(new Vector2(i, row));
+                sameLineCounter++;
+                Console.WriteLine("Got em!");
+            }
+        }
+    }
+
+    for (int i = 0; i < rows.Count; i++)
+    {
+        if (i != row && rows[i][column] == symbol)
+        {
+            if (!DoesAntennaExistForSymbol(new Vector2(column, i), symbol))
+            {
+                antennaLocations[symbol].Add(new Vector2(column, i));
+                sameLineCounter++;
+                Console.WriteLine("Got em!");
+            }
+        }
+    }
+
+    return sameLineCounter;
+}
+
+bool DoesAntennaExistForSymbol(Vector2 location, char symbol)
+{
+    Console.WriteLine(location.ToString());
+    foreach (var antennaLocation in antennaLocations[symbol])
+    {
+        if (antennaLocation == location)
+        {
+            Console.WriteLine("Found duplicate!");
+            return true;
+        }
+    }
+    return false;
+}
 
