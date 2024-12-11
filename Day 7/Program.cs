@@ -218,7 +218,6 @@ class MainProgram
                 }
             }
 
-            Int64 branchesAdded = 0;
             foreach (Branch branch in previousLevelBranches)
             {
                 for (Int64 i = 0; i < 3; i++)
@@ -235,23 +234,17 @@ class MainProgram
                     {
                         newCalculation.Add('+');
                         branches.Add(new Branch(LevelIndex, newCalculation));
-
-                        branchesAdded++;
                     }
                     // -
                     else if (i == 1)
                     {
                         newCalculation.Add('*');
                         branches.Add(new Branch(LevelIndex, newCalculation));
-
-                        branchesAdded++;
                     }
                     else if (i == 2)
                     {
                         newCalculation.Add('|');
                         branches.Add(new Branch(LevelIndex, newCalculation));
-
-                        branchesAdded++;
                     }
                 }
             }
@@ -260,8 +253,6 @@ class MainProgram
             {
                 bAtBottom = true;
             }
-
-            // Console.WriteLine("Branches added: " + branchesAdded.ToString());
         }
 
         // Console.WriteLine("Branches----: " + branches.Count.ToString());
